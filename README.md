@@ -32,3 +32,4 @@ java -jar target/canteen-management-system-1.0.0-jar-with-dependencies.jar
 
 The app inserts a few sample menu items and customers on the first run.
 # Canteen-Managemenrt-PROJECT
+# canteen-management-system

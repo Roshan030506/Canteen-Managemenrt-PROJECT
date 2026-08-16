@@ -1,0 +1,1283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Canteen Management System</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-main: #0b0f19;
+            --bg-sidebar: #111827;
+            --bg-card: rgba(22, 29, 48, 0.75);
+            --bg-card-hover: rgba(30, 41, 59, 0.8);
+            --color-primary: #6366f1;
+            --color-primary-hover: #4f46e5;
+            --color-success: #06b6d4;
+            --color-success-hover: #0891b2;
+            --color-error: #ef4444;
+            --border-color: rgba(255, 255, 255, 0.08);
+            --text-primary: #f3f4f6;
+            --text-secondary: #9ca3af;
+            --transition-speed: 0.3s;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-main);
+            color: var(--text-primary);
+            display: flex;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Sidebar navigation */
+        .sidebar {
+            width: 250px;
+            background-color: var(--bg-sidebar);
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            padding: 2rem 1.5rem;
+            position: fixed;
+            height: 100vh;
+            left: 0;
+            top: 0;
+            z-index: 100;
+        }
+
+        .sidebar-header {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--color-primary), var(--color-success));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 2.5rem;
+            text-align: center;
+        }
+
+        .nav-links {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            list-style: none;
+        }
+
+        .nav-btn {
+            width: 100%;
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-family: inherit;
+            font-size: 0.95rem;
+            font-weight: 500;
+            padding: 0.8rem 1rem;
+            border-radius: 8px;
+            text-align: left;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            transition: all var(--transition-speed);
+        }
+
+        .nav-btn:hover {
+            color: var(--text-primary);
+            background-color: rgba(255, 255, 255, 0.04);
+        }
+
+        .nav-btn.active {
+            color: #fff;
+            background-color: var(--color-primary);
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+        }
+
+        .sidebar-footer {
+            margin-top: auto;
+            text-align: center;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        /* Main Workspace Content */
+        .content {
+            margin-left: 250px;
+            padding: 2.5rem;
+            flex-grow: 1;
+            width: calc(100% - 250px);
+            min-height: 100vh;
+        }
+
+        .view-panel {
+            display: none;
+            animation: fadeIn 0.4s ease-out;
+        }
+
+        .view-panel.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .view-header {
+            font-family: 'Outfit', sans-serif;
+            margin-bottom: 2rem;
+        }
+
+        .view-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        .view-subtitle {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-top: 0.25rem;
+        }
+
+        /* Grid layouts and cards */
+        .grid-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2.5rem;
+        }
+
+        .card-stat {
+            background-color: var(--bg-card);
+            backdrop-filter: blur(16px);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            transition: transform var(--transition-speed);
+        }
+
+        .card-stat:hover {
+            transform: translateY(-4px);
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-secondary);
+        }
+
+        .stat-value {
+            font-family: 'Outfit', sans-serif;
+            font-size: 2rem;
+            font-weight: 700;
+            margin-top: 0.5rem;
+            color: var(--color-primary);
+        }
+
+        .stat-value.success {
+            color: var(--color-success);
+        }
+
+        .stat-value.warning {
+            color: #f59e0b;
+        }
+
+        .card-large {
+            background-color: var(--bg-card);
+            backdrop-filter: blur(16px);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            margin-bottom: 2rem;
+        }
+
+        .card-large-title {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            color: #fff;
+        }
+
+        /* Custom Modern Tables */
+        .table-container {
+            overflow-x: auto;
+            width: 100%;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+
+        th {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-secondary);
+            padding: 1rem 1.25rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        td {
+            font-size: 0.9rem;
+            padding: 1rem 1.25rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+            color: var(--text-primary);
+        }
+
+        tr:hover td {
+            background-color: rgba(255, 255, 255, 0.02);
+        }
+
+        /* Forms styling */
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1.25rem;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        input, select {
+            background-color: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: #fff;
+            font-family: inherit;
+            font-size: 0.95rem;
+            padding: 0.75rem 1rem;
+            transition: all var(--transition-speed);
+            outline: none;
+            width: 100%;
+        }
+
+        input:focus, select:focus {
+            border-color: var(--color-primary);
+            box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+            background-color: rgba(255, 255, 255, 0.08);
+        }
+
+        .btn {
+            background-color: var(--color-primary);
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 0.95rem;
+            font-weight: 600;
+            padding: 0.75rem 1.5rem;
+            cursor: pointer;
+            transition: all var(--transition-speed);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .btn:hover {
+            background-color: var(--color-primary-hover);
+        }
+
+        .btn-success {
+            background-color: var(--color-success);
+        }
+
+        .btn-success:hover {
+            background-color: var(--color-success-hover);
+        }
+
+        .btn-secondary {
+            background-color: #4b5563;
+        }
+
+        .btn-secondary:hover {
+            background-color: #374151;
+        }
+
+        .btn-sm {
+            padding: 0.4rem 0.8rem;
+            font-size: 0.8rem;
+            border-radius: 6px;
+        }
+
+        /* Order split layout */
+        .order-layout {
+            display: grid;
+            grid-template-columns: 1.3fr 1fr;
+            gap: 1.5rem;
+        }
+
+        .search-wrapper {
+            margin-bottom: 1.25rem;
+        }
+
+        /* Side Cart Container */
+        .cart-summary {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .cart-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem 0;
+            border-bottom: 1px dashed rgba(255, 255, 255, 0.05);
+        }
+
+        .cart-total-label {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #fff;
+            display: flex;
+            justify-content: space-between;
+            margin-top: 1rem;
+        }
+
+        .badge {
+            background-color: rgba(6, 182, 212, 0.15);
+            color: var(--color-success);
+            padding: 0.2rem 0.5rem;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .badge-error {
+            background-color: rgba(239, 68, 68, 0.15);
+            color: var(--color-error);
+        }
+
+        /* Toast notifications */
+        .toast-container {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            z-index: 1000;
+        }
+
+        .toast {
+            background-color: #1f2937;
+            border-left: 4px solid var(--color-primary);
+            color: #fff;
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            min-width: 250px;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        .toast.success {
+            border-left-color: var(--color-success);
+        }
+
+        .toast.error {
+            border-left-color: var(--color-error);
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        /* Detail pane master-detail layout */
+        .history-layout {
+            display: grid;
+            grid-template-columns: 1.2fr 1fr;
+            gap: 1.5rem;
+        }
+
+        .detail-pane {
+            position: sticky;
+            top: 2.5rem;
+        }
+
+        .detail-item-list {
+            margin-top: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            background-color: rgba(0, 0, 0, 0.2);
+            padding: 1rem;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+
+        .detail-item-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.85rem;
+            color: var(--text-primary);
+        }
+
+        .customer-row {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        /* Loading Spinner */
+        .spinner {
+            border: 3px solid rgba(255, 255, 255, 0.1);
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            border-left-color: var(--color-primary);
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+        <div class="sidebar-header">CANTEEN SYSTEM</div>
+        <ul class="nav-links">
+            <li>
+                <button class="nav-btn active" onclick="switchTab('dashboard')">
+                    Dashboard
+                </button>
+            </li>
+            <li>
+                <button class="nav-btn" onclick="switchTab('place-order')">
+                    Place Order
+                </button>
+            </li>
+            <li>
+                <button class="nav-btn" onclick="switchTab('manage-menu')">
+                    Manage Menu
+                </button>
+            </li>
+            <li>
+                <button class="nav-btn" onclick="switchTab('manage-customers')">
+                    Customers
+                </button>
+            </li>
+            <li>
+                <button class="nav-btn" onclick="switchTab('order-history')">
+                    Order History
+                </button>
+            </li>
+        </ul>
+        <div class="sidebar-footer">
+            <p>Admin Console</p>
+            <p style="font-size:0.75rem; opacity:0.6; margin-top:0.25rem;">v1.0.0</p>
+        </div>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="content">
+
+        <!-- VIEW: DASHBOARD -->
+        <div id="dashboard-panel" class="view-panel active">
+            <div class="view-header">
+                <h1 class="view-title">Dashboard Overview</h1>
+                <p class="view-subtitle">Real-time statistics and recent canteen operations</p>
+            </div>
+            
+            <div class="grid-stats">
+                <div class="card-stat">
+                    <div class="stat-label">Total Transactions</div>
+                    <div class="stat-value" id="stat-orders">0</div>
+                </div>
+                <div class="card-stat">
+                    <div class="stat-label">Total Revenue</div>
+                    <div class="stat-value success" id="stat-revenue">Rs. 0.00</div>
+                </div>
+                <div class="card-stat">
+                    <div class="stat-label">Top Selling Item</div>
+                    <div class="stat-value warning" id="stat-top-item">N/A</div>
+                </div>
+            </div>
+
+            <div class="card-large">
+                <h2 class="card-large-title">Recent Transactions</h2>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Order ID</th>
+                                <th>Customer Name</th>
+                                <th>Total Amount</th>
+                                <th>Order Time</th>
+                            </tr>
+                        </thead>
+                        <tbody id="table-recent-orders">
+                            <tr>
+                                <td colspan="4" style="text-align: center; color: var(--text-secondary);">No orders recorded yet.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- VIEW: PLACE ORDER -->
+        <div id="place-order-panel" class="view-panel">
+            <div class="view-header">
+                <h1 class="view-title">Place New Order</h1>
+                <p class="view-subtitle">Register sales transactions and update stock dynamically</p>
+            </div>
+
+            <div class="order-layout">
+                <!-- Left panel: Menu items directory -->
+                <div class="card-large" style="margin-bottom:0;">
+                    <h2 class="card-large-title">Menu Directory</h2>
+                    <div class="search-wrapper">
+                        <input type="text" id="order-search-menu" placeholder="Search item name or category..." oninput="filterOrderMenu()">
+                    </div>
+                    <div class="table-container" style="max-height: 400px; overflow-y: auto;">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Name</th>
+                                    <th>Category</th>
+                                    <th>Price</th>
+                                    <th>Stock</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="table-order-menu">
+                                <!-- Loaded dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Right panel: Shopping Cart drawer -->
+                <div class="cart-summary">
+                    <div class="card-large" style="margin-bottom:0;">
+                        <h2 class="card-large-title">Checkout Drawer</h2>
+                        
+                        <div class="form-group" style="margin-bottom: 1.5rem;">
+                            <label for="order-customer-select">Select Customer</label>
+                            <div class="customer-row">
+                                <select id="order-customer-select">
+                                    <option value="" disabled selected>Choose a customer...</option>
+                                    <!-- Loaded dynamically -->
+                                </select>
+                                <button class="btn btn-sm" onclick="quickRegisterCustomer()">+</button>
+                            </div>
+                        </div>
+
+                        <h3 class="card-large-title" style="font-size: 1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; margin-bottom: 1rem;">Selected Items</h3>
+                        <div id="cart-items-container" style="max-height: 250px; overflow-y: auto; margin-bottom: 1.5rem;">
+                            <!-- Cart rows go here -->
+                            <div style="text-align: center; color: var(--text-secondary); font-size: 0.9rem; padding: 1rem 0;">Cart is empty.</div>
+                        </div>
+
+                        <div class="cart-total-label">
+                            <span>Total Amount:</span>
+                            <span id="cart-total-value" style="color: var(--color-success);">Rs. 0.00</span>
+                        </div>
+
+                        <div style="display: flex; gap: 10px; margin-top: 1.5rem;">
+                            <button class="btn btn-secondary" onclick="clearCart()" style="flex: 1;">Clear Cart</button>
+                            <button class="btn btn-success" onclick="processCheckout()" style="flex: 2;">Place Order</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- VIEW: MANAGE MENU -->
+        <div id="manage-menu-panel" class="view-panel">
+            <div class="view-header">
+                <h1 class="view-title">Manage Canteen Menu</h1>
+                <p class="view-subtitle">Add menu items, price sheets, and check kitchen inventory</p>
+            </div>
+
+            <div class="order-layout">
+                <!-- Left panel: Menu Table -->
+                <div class="card-large" style="margin-bottom:0;">
+                    <h2 class="card-large-title">Menu Registry</h2>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Item Name</th>
+                                    <th>Category</th>
+                                    <th>Price</th>
+                                    <th>Current Stock</th>
+                                </tr>
+                            </thead>
+                            <tbody id="table-admin-menu">
+                                <!-- Loaded dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Right panel: Add Menu Form -->
+                <div class="card-large" style="margin-bottom:0; height: fit-content;">
+                    <h2 class="card-large-title">Add Menu Item</h2>
+                    <form id="form-add-menu" onsubmit="submitMenuItem(event)">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="menu-name">Item Name</label>
+                                <input type="text" id="menu-name" placeholder="e.g., Veg Sandwich" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="menu-category">Category</label>
+                                <input type="text" id="menu-category" placeholder="e.g., Snacks" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="menu-price">Price (Rs.)</label>
+                                <input type="number" id="menu-price" step="0.01" min="0.01" placeholder="e.g., 50.00" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="menu-quantity">Initial Stock</label>
+                                <input type="number" id="menu-quantity" min="0" placeholder="e.g., 30" required>
+                            </div>
+                            <button type="submit" class="btn" style="margin-top: 0.5rem;">Save Item</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- VIEW: MANAGE CUSTOMERS -->
+        <div id="manage-customers-panel" class="view-panel">
+            <div class="view-header">
+                <h1 class="view-title">Manage Customers</h1>
+                <p class="view-subtitle">View loyalty directories and register regular clients</p>
+            </div>
+
+            <div class="order-layout">
+                <!-- Left panel: Customers Table -->
+                <div class="card-large" style="margin-bottom:0;">
+                    <h2 class="card-large-title">Customer Database</h2>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Customer ID</th>
+                                    <th>Name</th>
+                                    <th>Phone Number</th>
+                                </tr>
+                            </thead>
+                            <tbody id="table-admin-customers">
+                                <!-- Loaded dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Right panel: Register Form -->
+                <div class="card-large" style="margin-bottom:0; height: fit-content;">
+                    <h2 class="card-large-title">Register Customer</h2>
+                    <form id="form-register-customer" onsubmit="submitCustomer(event)">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="cust-name">Full Name</label>
+                                <input type="text" id="cust-name" placeholder="e.g., Ramesh Kumar" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="cust-phone">Phone Number</label>
+                                <input type="text" id="cust-phone" placeholder="e.g., 9876543210" required>
+                            </div>
+                            <button type="submit" class="btn" style="margin-top: 0.5rem;">Register Customer</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- VIEW: ORDER HISTORY -->
+        <div id="order-history-panel" class="view-panel">
+            <div class="view-header">
+                <h1 class="view-title">Order History Log</h1>
+                <p class="view-subtitle">Inspect placed orders and details</p>
+            </div>
+
+            <div class="history-layout">
+                <!-- Left: Orders Table -->
+                <div class="card-large" style="margin-bottom:0;">
+                    <h2 class="card-large-title">Master Transactions List</h2>
+                    <div class="table-container" style="max-height: 450px; overflow-y: auto;">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Order ID</th>
+                                    <th>Customer</th>
+                                    <th>Total Billing</th>
+                                    <th>Order Date</th>
+                                </tr>
+                            </thead>
+                            <tbody id="table-admin-history">
+                                <!-- Loaded dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Right: Specification Detail View -->
+                <div class="card-large detail-pane" style="margin-bottom:0;">
+                    <h2 class="card-large-title">Order Specification Details</h2>
+                    <div id="order-detail-empty" style="text-align: center; color: var(--text-secondary); padding: 3rem 0;">
+                        Select an order from the master list to inspect transaction specifications.
+                    </div>
+                    <div id="order-detail-content" style="display: none;">
+                        <h3 id="detail-order-id" style="font-family:'Outfit', sans-serif; font-size: 1.1rem; color: #fff; margin-bottom: 0.5rem;">Order #--</h3>
+                        <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.25rem;">Customer: <span id="detail-customer-name" style="color:var(--text-primary); font-weight:500;">--</span></p>
+                        <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1.5rem;">Time: <span id="detail-order-time" style="color:var(--text-primary);">--</span></p>
+                        
+                        <label>Itemized Billing</label>
+                        <div class="detail-item-list" id="detail-items-container">
+                            <!-- Items row go here -->
+                        </div>
+
+                        <div class="cart-total-label" style="margin-top: 1.5rem; border-top: 1px solid var(--border-color); padding-top: 1rem;">
+                            <span>Total Amount:</span>
+                            <span id="detail-total-amount" style="color: var(--color-success);">Rs. 0.00</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Toast Notifications Container -->
+    <div class="toast-container" id="toast-container"></div>
+
+    <script>
+        // State Store
+        let state = {
+            menuItems: [],
+            customers: [],
+            orders: [],
+            cart: [], // items: { menuItemId, name, price, quantity }
+            activeTab: 'dashboard'
+        };
+
+        // Initialize App
+        document.addEventListener('DOMContentLoaded', () => {
+            refreshAllData();
+            // Poll for updates every 10 seconds
+            setInterval(refreshAllData, 10000);
+        });
+
+        // Tab Switcher
+        function switchTab(tabId) {
+            state.activeTab = tabId;
+            
+            // Toggle sidebar button active classes
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            const activeBtn = Array.from(document.querySelectorAll('.nav-btn')).find(btn => 
+                btn.textContent.trim().toLowerCase() === tabId.replace('-', ' ') ||
+                (tabId === 'manage-menu' && btn.textContent.trim().toLowerCase() === 'manage menu') ||
+                (tabId === 'manage-customers' && btn.textContent.trim().toLowerCase() === 'customers') ||
+                (tabId === 'order-history' && btn.textContent.trim().toLowerCase() === 'order history')
+            );
+            if (activeBtn) activeBtn.classList.add('active');
+
+            // Toggle panels visible class
+            document.querySelectorAll('.view-panel').forEach(panel => {
+                panel.classList.remove('active');
+            });
+            const targetPanel = document.getElementById(`${tabId}-panel`);
+            if (targetPanel) targetPanel.classList.add('active');
+
+            // Custom tab trigger refreshes
+            if (tabId === 'order-history') {
+                document.getElementById('order-detail-empty').style.display = 'block';
+                document.getElementById('order-detail-content').style.display = 'none';
+            }
+        }
+
+        // Fetch Utilities
+        async function fetchAPI(url, options = {}) {
+            try {
+                const response = await fetch(url, options);
+                if (!response.ok) {
+                    const errText = await response.text();
+                    throw new Error(errText || `Server responded with ${response.status}`);
+                }
+                const contentType = response.headers.get("content-type");
+                if (contentType && contentType.includes("application/json")) {
+                    return await response.json();
+                }
+                return await response.text();
+            } catch (err) {
+                showToast(err.message, 'error');
+                throw err;
+            }
+        }
+
+        // Data Refresh Orchestrator
+        async function refreshAllData() {
+            try {
+                // Fetch stats, menu, customers, and orders concurrently
+                const stats = await fetchAPI('/api/stats');
+                state.menuItems = await fetchAPI('/api/menu');
+                state.customers = await fetchAPI('/api/customers');
+                state.orders = await fetchAPI('/api/orders');
+
+                renderStats(stats);
+                renderRecentOrdersTable();
+                renderMenuSelectionTable();
+                renderCustomerSelectCombo();
+                renderAdminMenuTable();
+                renderAdminCustomerTable();
+                renderAdminOrderHistoryTable();
+            } catch (err) {
+                console.error("Data refresh failed", err);
+            }
+        }
+
+        // Toast Notifications
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.innerText = message;
+            container.appendChild(toast);
+
+            setTimeout(() => {
+                toast.style.animation = 'slideIn 0.3s ease-out reverse';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        // Render Dashboard Stats
+        function renderStats(stats) {
+            document.getElementById('stat-orders').innerText = stats.totalOrders || '0';
+            document.getElementById('stat-revenue').innerText = `Rs. ${(stats.totalRevenue || 0).toFixed(2)}`;
+            document.getElementById('stat-top-item').innerText = stats.topSellingItem || 'N/A';
+        }
+
+        // Render Recent Orders in Dashboard
+        function renderRecentOrdersTable() {
+            const tbody = document.getElementById('table-recent-orders');
+            tbody.innerHTML = '';
+
+            const recents = state.orders.slice(0, 5);
+            if (recents.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: var(--text-secondary);">No orders recorded yet.</td></tr>`;
+                return;
+            }
+
+            recents.forEach(order => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>#${order.id}</td>
+                    <td style="font-weight: 500;">${order.customerName}</td>
+                    <td style="color: var(--color-success); font-weight: 600;">Rs. ${order.totalAmount.toFixed(2)}</td>
+                    <td style="font-size: 0.85rem; color: var(--text-secondary);">${formatDateTime(order.orderTime)}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // Render Menu list for Order View
+        function renderMenuSelectionTable(filteredItems = null) {
+            const tbody = document.getElementById('table-order-menu');
+            tbody.innerHTML = '';
+
+            const items = filteredItems || state.menuItems;
+            if (items.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--text-secondary);">No items matching filter.</td></tr>`;
+                return;
+            }
+
+            items.forEach(item => {
+                const tr = document.createElement('tr');
+                const isOutOfStock = item.quantity <= 0;
+                tr.innerHTML = `
+                    <td>${item.id}</td>
+                    <td style="font-weight: 500;">${item.name}</td>
+                    <td><span class="badge">${item.category}</span></td>
+                    <td style="font-weight:600;">Rs. ${item.price.toFixed(2)}</td>
+                    <td>
+                        <span class="badge ${isOutOfStock ? 'badge-error' : ''}">
+                            ${isOutOfStock ? 'Out of Stock' : `${item.quantity} units`}
+                        </span>
+                    </td>
+                    <td>
+                        <button class="btn btn-sm" onclick="handleAddToCart(${item.id}, '${escapeQuote(item.name)}', ${item.price}, ${item.quantity})" ${isOutOfStock ? 'disabled style="opacity:0.5; cursor:not-allowed;"' : ''}>
+                            Add
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // Render customer dropdown
+        function renderCustomerSelectCombo() {
+            const select = document.getElementById('order-customer-select');
+            const selectedVal = select.value;
+            select.innerHTML = `<option value="" disabled ${!selectedVal ? 'selected' : ''}>Choose a customer...</option>`;
+            
+            state.customers.forEach(cust => {
+                const opt = document.createElement('option');
+                opt.value = cust.id;
+                opt.innerText = `${cust.name} (${cust.phone})`;
+                if (parseInt(selectedVal) === cust.id) {
+                    opt.selected = true;
+                }
+                select.appendChild(opt);
+            });
+        }
+
+        // Render Menu in Manage Menu View
+        function renderAdminMenuTable() {
+            const tbody = document.getElementById('table-admin-menu');
+            tbody.innerHTML = '';
+
+            if (state.menuItems.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--text-secondary);">No menu items registered yet.</td></tr>`;
+                return;
+            }
+
+            state.menuItems.forEach(item => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${item.id}</td>
+                    <td style="font-weight: 500;">${item.name}</td>
+                    <td><span class="badge">${item.category}</span></td>
+                    <td style="font-weight: 600;">Rs. ${item.price.toFixed(2)}</td>
+                    <td>${item.quantity} units</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // Render Customers in Manage Customers View
+        function renderAdminCustomerTable() {
+            const tbody = document.getElementById('table-admin-customers');
+            tbody.innerHTML = '';
+
+            if (state.customers.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="3" style="text-align: center; color: var(--text-secondary);">No customers registered yet.</td></tr>`;
+                return;
+            }
+
+            state.customers.forEach(cust => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>#${cust.id}</td>
+                    <td style="font-weight:500;">${cust.name}</td>
+                    <td style="color: var(--text-secondary);">${cust.phone}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // Render Order History log
+        function renderAdminOrderHistoryTable() {
+            const tbody = document.getElementById('table-admin-history');
+            tbody.innerHTML = '';
+
+            if (state.orders.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: var(--text-secondary);">No transactions recorded.</td></tr>`;
+                return;
+            }
+
+            state.orders.forEach(order => {
+                const tr = document.createElement('tr');
+                tr.style.cursor = 'pointer';
+                tr.onclick = () => loadOrderSpecifications(order.id);
+                tr.innerHTML = `
+                    <td>#${order.id}</td>
+                    <td style="font-weight:500;">${order.customerName}</td>
+                    <td style="color:var(--color-success); font-weight:600;">Rs. ${order.totalAmount.toFixed(2)}</td>
+                    <td style="font-size:0.85rem; color:var(--text-secondary);">${formatDateTime(order.orderTime)}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // Filter Menu items in Place Order View
+        function filterOrderMenu() {
+            const val = document.getElementById('order-search-menu').value.trim().toLowerCase();
+            if (val === '') {
+                renderMenuSelectionTable();
+                return;
+            }
+            const filtered = state.menuItems.filter(item => 
+                item.name.toLowerCase().includes(val) || 
+                item.category.toLowerCase().includes(val)
+            );
+            renderMenuSelectionTable(filtered);
+        }
+
+        // Add item to shopping cart state
+        function handleAddToCart(itemId, name, price, stock) {
+            const input = prompt(`Enter quantity for '${name}' (Available stock: ${stock}):`, "1");
+            if (input === null) return;
+            const qty = parseInt(input.trim());
+            if (isNaN(qty) || qty <= 0) {
+                alert("Quantity must be a positive integer.");
+                return;
+            }
+            if (qty > stock) {
+                alert(`Insufficient stock. Only ${stock} units available.`);
+                return;
+            }
+
+            const existing = state.cart.find(c => c.menuItemId === itemId);
+            if (existing) {
+                if (existing.quantity + qty > stock) {
+                    alert(`Cannot exceed stock bounds. You already have ${existing.quantity} units in cart.`);
+                    return;
+                }
+                existing.quantity += qty;
+            } else {
+                state.cart.push({ menuItemId: itemId, name, price, quantity: qty });
+            }
+
+            renderCart();
+            showToast(`Added ${qty}x ${name} to cart.`);
+        }
+
+        // Render Cart elements in sidebar drawer
+        function renderCart() {
+            const container = document.getElementById('cart-items-container');
+            container.innerHTML = '';
+
+            if (state.cart.length === 0) {
+                container.innerHTML = `<div style="text-align: center; color: var(--text-secondary); font-size: 0.9rem; padding: 1rem 0;">Cart is empty.</div>`;
+                document.getElementById('cart-total-value').innerText = 'Rs. 0.00';
+                return;
+            }
+
+            let total = 0;
+            state.cart.forEach(ci => {
+                const lineTotal = ci.price * ci.quantity;
+                total += lineTotal;
+
+                const row = document.createElement('div');
+                row.className = 'cart-row';
+                row.innerHTML = `
+                    <div>
+                        <div style="font-weight: 500; font-size: 0.9rem;">${ci.name}</div>
+                        <div style="font-size: 0.8rem; color: var(--text-secondary);">${ci.quantity}x @ Rs. ${ci.price.toFixed(2)}</div>
+                    </div>
+                    <div style="display:flex; align-items:center; gap: 10px;">
+                        <span style="font-weight:600; font-size:0.9rem; color:#fff;">Rs. ${lineTotal.toFixed(2)}</span>
+                        <button class="btn btn-sm btn-secondary" onclick="removeFromCart(${ci.menuItemId})" style="padding: 2px 6px; font-size: 0.75rem;">x</button>
+                    </div>
+                `;
+                container.appendChild(row);
+            });
+
+            document.getElementById('cart-total-value').innerText = `Rs. ${total.toFixed(2)}`;
+        }
+
+        // Remove item from cart
+        function removeFromCart(itemId) {
+            state.cart = state.cart.filter(c => c.menuItemId !== itemId);
+            renderCart();
+        }
+
+        // Clear cart
+        function clearCart() {
+            state.cart = [];
+            renderCart();
+        }
+
+        // Quick register customer from order view
+        async function quickRegisterCustomer() {
+            const name = prompt("Enter customer name:");
+            if (!name || name.trim() === '') return;
+            const phone = prompt("Enter phone number:");
+            if (!phone || phone.trim() === '') return;
+
+            try {
+                const response = await fetchAPI('/api/customers', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name: name.trim(), phone: phone.trim() })
+                });
+                showToast("Customer registered successfully!");
+                await refreshAllData();
+                
+                // Try selecting newly registered customer
+                const select = document.getElementById('order-customer-select');
+                const matched = state.customers.find(c => c.phone === phone.trim());
+                if (matched) {
+                    select.value = matched.id;
+                }
+            } catch (err) {
+                // error alert handled by fetchAPI
+            }
+        }
+
+        // Process cart checkout
+        async function processCheckout() {
+            const customerSelect = document.getElementById('order-customer-select');
+            const custId = parseInt(customerSelect.value);
+
+            if (isNaN(custId)) {
+                alert("Please select a customer for the transaction.");
+                return;
+            }
+            if (state.cart.length === 0) {
+                alert("Cart is empty. Add menu items first.");
+                return;
+            }
+
+            if (!confirm(`Confirm checkout of Rs. ${calculateCartTotalAmount().toFixed(2)}?`)) {
+                return;
+            }
+
+            try {
+                const response = await fetchAPI('/api/orders', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        customerId: custId,
+                        items: state.cart.map(c => ({ menuItemId: c.menuItemId, quantity: c.quantity }))
+                    })
+                });
+
+                showToast("Order placed successfully!");
+                clearCart();
+                customerSelect.value = '';
+                await refreshAllData();
+            } catch (err) {
+                // error details displayed via fetchAPI
+            }
+        }
+
+        function calculateCartTotalAmount() {
+            return state.cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+        }
+
+        // Form Submit: Add Menu Item
+        async function submitMenuItem(event) {
+            event.preventDefault();
+            const name = document.getElementById('menu-name').value.trim();
+            const cat = document.getElementById('menu-category').value.trim();
+            const price = parseFloat(document.getElementById('menu-price').value.trim());
+            const qty = parseInt(document.getElementById('menu-quantity').value.trim());
+
+            try {
+                await fetchAPI('/api/menu', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, category: cat, price, quantity: qty })
+                });
+
+                showToast(`Menu item '${name}' saved.`);
+                document.getElementById('form-add-menu').reset();
+                await refreshAllData();
+            } catch (err) { }
+        }
+
+        // Form Submit: Register Customer
+        async function submitCustomer(event) {
+            event.preventDefault();
+            const name = document.getElementById('cust-name').value.trim();
+            const phone = document.getElementById('cust-phone').value.trim();
+
+            try {
+                await fetchAPI('/api/customers', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, phone })
+                });
+
+                showToast(`Registered ${name}.`);
+                document.getElementById('form-register-customer').reset();
+                await refreshAllData();
+            } catch (err) { }
+        }
+
+        // Load Order Details in history split panel
+        function loadOrderSpecifications(orderId) {
+            const order = state.orders.find(o => o.id === orderId);
+            if (!order) return;
+
+            document.getElementById('order-detail-empty').style.display = 'none';
+            const content = document.getElementById('order-detail-content');
+            content.style.display = 'block';
+
+            document.getElementById('detail-order-id').innerText = `Order ID: #${order.id}`;
+            document.getElementById('detail-customer-name').innerText = order.customerName;
+            document.getElementById('detail-order-time').innerText = formatDateTime(order.orderTime);
+            document.getElementById('detail-total-amount').innerText = `Rs. ${order.totalAmount.toFixed(2)}`;
+
+            const container = document.getElementById('detail-items-container');
+            container.innerHTML = '';
+            order.itemLines.forEach(line => {
+                const div = document.createElement('div');
+                div.className = 'detail-item-row';
+                // Line is e.g. "Veg Sandwich x2 @ Rs. 50.00 = Rs. 100.00"
+                // Split for styled display
+                const parts = line.split(" = ");
+                const itemSpec = parts[0];
+                const priceTotal = parts[1] || "";
+                
+                div.innerHTML = `
+                    <span style="font-weight: 500;">${itemSpec}</span>
+                    <span style="font-weight: 600; color: #fff;">${priceTotal}</span>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        // Formatting Utils
+        function formatDateTime(isoString) {
+            if (!isoString) return '';
+            try {
+                // Remove millisecond or special timezone formats if any
+                const d = new Date(isoString);
+                if (isNaN(d.getTime())) return isoString.replace('T', ' ').substring(0, 19);
+                return d.toLocaleString('en-IN', {
+                    dateStyle: 'medium',
+                    timeStyle: 'short'
+                });
+            } catch (e) {
+                return isoString;
+            }
+        }
+
+        function escapeQuote(str) {
+            return str.replace(/'/g, "\\'");
+        }
+    </script>
+</body>
+</html>
